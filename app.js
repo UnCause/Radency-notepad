@@ -83,9 +83,9 @@ function addNote(Event) {
     
     var td_buttons = document.createElement("td");
     td_buttons.innerHTML = `
-    <i class="fa-solid fa-box-archive"></i>
-    <i class="fa-solid fa-trash"></i>
-    <i class="fa-solid fa-pen-to-square"></i>
+    <i class="fa-solid btn-archive fa-box-archive"></i>
+    <i class="fa-solid btn-delete fa-trash"></i>
+    <i class="fa-solid btn-edit fa-pen-to-square"></i>
     `;
     note_tr.appendChild(td_icon);
     note_tr.appendChild(td_name);
@@ -93,17 +93,33 @@ function addNote(Event) {
     note_tr.appendChild(td_category);
     note_tr.appendChild(td_content);
     note_tr.appendChild(td_buttons);
+    var btn_archive = document.querySelector(".btn-archive");
+    var btn_delete = document.querySelector(".btn-delete");
+    var btn_edit = document.querySelector(".btn-edit");
+    btn_archive.addEventListener('click', ArchiveNote);
+    btn_delete.addEventListener('click', DeleteNote);
+    btn_edit.addEventListener('click', EditNote);
 }
 
-function ArchiveNote (note) {
-
+function getNote (node) {
+    var btns = node.target.parentNode;
+    var note = btns.parentNode;
+    return note;
 }
 
-function DeleteNote (note) {
-
+function ArchiveNote (e) {
+    var note = getNote(e);
+    console.log(note);
 }
 
-function EditNote (note) {
+function DeleteNote (e) {
+    var note = getNote(e);
+    Notes_table_body.removeChild(note);
+}
+
+function EditNote (e) {
+    alert("editing");
+    var note = getNote(e);
     
 }
 
