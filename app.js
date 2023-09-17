@@ -1,16 +1,15 @@
 //Selectors and variables
 let showForm = false;
-let notes = [{name: "kek", created: "Septemder 14, 2023", category: "Task", content: "some content", dates: "1/10/2024", isArchived: false, index: 0}];
+let notes = [{name: "kek", created: "Septemder 14, 2023", category: "Task", content: "some content", dates: "1/10/2024", isArchived: false, index: 0},
+{name: "Lul", created: "Septemder 16, 2023", category: "Idea", content: "assgsergesr", dates: "1/10/2024", isArchived: false, index: 1},
+{name: "Vasya", created: "Septemder 16, 2023", category: "Random Thought", content: "dlgbfjglnbdfg", dates: "1/10/2024", isArchived: false, index: 2}];
 var btn_Show_create_form = document.querySelector(".show-create-form");
 var Note_Form_div = document.querySelector(".create-note-form");
 var Notes_table_body = document.querySelector(".notes-table-body");
 //Event Listeners
 btn_Show_create_form.addEventListener('click', showCreateForm);
 Notes_table_body.addEventListener('click', NoteClick);
-// Notes_table_body.addEventListener('beforeprint', loadNotes);
 window.onload = loadNotes;
-
-// btn_note_form_submit.addEventListener('click', addNote);
 
 //to export in external file
 var days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -67,12 +66,13 @@ function addNote (e) {
     var Ndates = "to implement"
     notes.push({name: Nname, created: createdDate, category: Ncategory, content: Ncontent, dates: Ndates, isArchived: false, index: notes.length});
     console.log(notes[notes.length-1]);
-    createNote(notes[notes.length-1])
+    var note_elem = createNote(notes[notes.length-1]);
+    Notes_table_body.appendChild(note_elem);
 }
 function createNote(note) {
-    // Event.preventDefault();
+
     var note_tr = document.createElement("tr");
-    Notes_table_body.appendChild(note_tr);
+    // Notes_table_body.appendChild(note_tr);
     var td_category = document.createElement("td");
     td_category.innerText = note.category;
     var td_icon = document.createElement("td");
@@ -89,17 +89,21 @@ function createNote(note) {
     var td_name = document.createElement("td");
     td_name.innerText = note.name;
     var td_created = document.createElement("td");
-    td_created.innerText = note.createdDate;
+    td_created.innerText = note.created;
     var td_content = document.createElement("td");
     td_content.innerText = note.content;
     var td_dates = document.createElement("td");
     td_dates.innerText = note.dates;
     var td_buttons = document.createElement("td");
     td_buttons.innerHTML = `
-    <i class="fa-solid btn-archive fa-box-archive"></i>
-    <i class="fa-solid btn-delete fa-trash"></i>
-    <i class="fa-solid btn-edit fa-pen-to-square"></i>
+    <i class="btn-archive fa-solid fa-box-archive"></i>
+    <i class="btn-delete fa-solid fa-trash"></i>
+    <i class="btn-edit fa-solid fa-pen-to-square"></i>
     `;
+    var td_index = document.createElement("td");
+    td_index.setAttribute("class", "note-index");
+    td_index.innerText = note.index;
+    // td_index.style.visibility = "hidden";
     note_tr.appendChild(td_icon);
     note_tr.appendChild(td_name);
     note_tr.appendChild(td_created);
@@ -107,12 +111,13 @@ function createNote(note) {
     note_tr.appendChild(td_content);
     note_tr.appendChild(td_dates);
     note_tr.appendChild(td_buttons);
+    note_tr.appendChild(td_index);
+    return note_tr;
 }
 
 function NoteClick (e) {
     item = e.target;
-
-    switch (item.classList[1]) {
+    switch (item.classList[0]) {
         case "btn-archive":
             ArchiveNote(e);
             break;
@@ -121,6 +126,12 @@ function NoteClick (e) {
             break;
         case "btn-edit":
             EditNote(e);
+            break;
+        case "edit-submit":
+            EditCompletion(e);
+            break;
+        case "edit-cancel":
+            EditCancel(e);
             break;
         default:
             break;
@@ -133,24 +144,97 @@ function getNote (node) {
     return note;
 }
 
+function getNoteObject (id) {
+    // var note_id = parseInt(id);
+    // // console.log(note_id + "   " + typeof note_id);
+    // notes.forEach(note => {
+    //     if (note.index === note_id) {
+    //         console.log(note);
+    //         return note;
+    //     };
+    // });
+}
+
 function loadNotes () {
-    alert("kek");
+    notes.forEach(note => {
+        var note_elem = createNote(note);
+        Notes_table_body.appendChild(note_elem);
+    });
 }
 
 function ArchiveNote (e) {
     var note = getNote(e);
-    console.log(note);
+    console.log(note[0]);
 }
 
 function DeleteNote (e) {
     var note = getNote(e);
     Notes_table_body.removeChild(note);
-    // console.log(e.target.classList);
 }
 
 function EditNote (e) {
-    alert("editing");
+    // console.log(e.target);
     var note = getNote(e);
+    var tr_edit = document.createElement("tr");
+    tr_edit.setAttribute("class", "edit-note-tr")
+    var note_data = note.children;
+    console.log(note_data);
+    var category = [];
+    switch (note_data[3].innerText) {
+        case "Task":
+            category[0] = "selected";
+            break;
+        case "Idea":
+            category[1] = "selected";
+            break;
+        case "Random Thought":
+            category[2] = "selected";
+            break;
+        default:
+            break;
+    }
+    tr_edit.innerHTML = `
+    <form>
+        <td>${note_data[0].innerHTML}</td>
+            <td><input type="text" required name="Name" placeholder="Name" value="${note_data[1].innerText}"></td>
+            <td>${note_data[2].innerText}</td>
+            <td><select>
+                <option value="Task" ${category[0]}>Task</option>
+                <option value="Idea" ${category[1]}>Idea</option>
+                <option value="Random Thought" ${category[2]}>Random Thought</option>
+            </select></td>
+            <td><textarea type="text" required name="Content" placeholder="Content">${note_data[4].innerText}</textarea></td>
+            <td>${note_data[5].innerText}</td>
+            <td><input type="submit" class="edit-submit" value="Save"> <input type="button" class="edit-cancel" value="Cancel"></td>
+            <td class="note-index">${note_data[7].innerText}</td>
+    </form>
+    `;
+    Notes_table_body.insertBefore(tr_edit, note);
+    Notes_table_body.removeChild(note);
+    return note;
+}
+
+function EditCancel (e) {
+    // var note_id = document.querySelector(".note-index");
+    var note = getNote(e);
+    // console.log(note.children[8].innerText);
+    var Notes_table_body_temp = document.querySelector(".notes-table-body");
+    var tr_edit = document.querySelector(".edit-note-tr");
+    var id = parseInt(note.children[8].innerText);
+    var note_object = {}
+    notes.forEach(note => {
+        if (note.index === id) {
+            // console.log(note);
+            note_object = note;
+        };
+    });
+    var note_elem = createNote(note_object)
+    console.log(note_elem);
+    Notes_table_body_temp.insertBefore(note_elem, tr_edit);
+    Notes_table_body_temp.removeChild(tr_edit);
+}
+
+function EditCompletion (e) {
     
 }
 
