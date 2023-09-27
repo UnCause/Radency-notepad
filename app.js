@@ -2,13 +2,33 @@
 let showForm = false;
 let notes = [{name: "kek", created: "Septemder 14, 2023", category: "Task", content: "some content", dates: "1/10/2024", isArchived: false, index: 0},
 {name: "Lul", created: "Septemder 16, 2023", category: "Idea", content: "assgsergesr", dates: "1/10/2024", isArchived: false, index: 1},
-{name: "Vasya", created: "Septemder 16, 2023", category: "Random Thought", content: "dlgbfjglnbdfg", dates: "1/10/2024", isArchived: false, index: 2}];
+{name: "Vasya", created: "Septemder 16, 2023", category: "Random Thought", content: "dlgbfjglnbdfg", dates: "1/10/2024", isArchived: false, index: 2},
+{name: "huh", created: "Septemder 25, 2023", category: "Task", content: "ddss", dates: "1/10/2024", isArchived: true, index: 3},
+{name: "meh", created: "Septemder 25, 2023", category: "Idea", content: "treq", dates: "1/10/2024", isArchived: true, index: 4},
+{name: "wawa", created: "Septemder 25, 2023", category: "Random Thought", content: "jhgfds", dates: "1/10/2024", isArchived: true, index: 5}];
 var btn_Show_create_form = document.querySelector(".show-create-form");
 var Note_Form_div = document.querySelector(".create-note-form");
 var Notes_table_body = document.querySelector(".notes-table-body");
+var btn_Show_archive_notes = document.querySelector(".archived-notes-btn");
+var row_task = document.querySelector(".row-task");
+var row_idea = document.querySelector(".row-idea");
+var row_rndm = document.querySelector(".row-rndm");
+var td_task_active = document.createElement("td");
+var td_task_archived = document.createElement("td");
+var td_idea_active = document.createElement("td");
+var td_idea_archived = document.createElement("td");
+var td_rndm_active = document.createElement("td");
+var td_rndm_archived = document.createElement("td");
+row_task.appendChild(td_task_active);
+row_task.appendChild(td_task_archived);
+row_idea.appendChild(td_idea_active);
+row_idea.appendChild(td_idea_archived);
+row_rndm.appendChild(td_rndm_active);
+row_rndm.appendChild(td_rndm_archived);
 //Event Listeners
 btn_Show_create_form.addEventListener('click', showCreateForm);
 Notes_table_body.addEventListener('click', NoteClick);
+btn_Show_archive_notes.addEventListener('click', ShowArchived);
 window.onload = loadNotes;
 
 //to export in external file
@@ -56,16 +76,22 @@ function showCreateForm (Event) {
 }
 function addNote (e) {
     e.preventDefault();
-    console.log();
-    var Ncategory = document.addNote.Category.value;
-    var Nname = document.addNote.Name.value;
-    var Ncontent = document.addNote.Content.value;
+    var category = document.addNote.Category.value;
+    var name = document.addNote.Name.value;
+    var content = document.addNote.Content.value;
     var date = new Date();
     var createdDate = months[date.getMonth()] + " " + date.getDate()  + 
     ", " + date.getFullYear();
-    var Ndates = "to implement"
-    notes.push({name: Nname, created: createdDate, category: Ncategory, content: Ncontent, dates: Ndates, isArchived: false, index: notes.length});
-    console.log(notes[notes.length-1]);
+    var dates = "to implement";
+    notes.push({
+        name, 
+        created: createdDate, 
+        category, 
+        content, 
+        dates, 
+        isArchived: false, 
+        index: notes.length});
+    // console.log(notes[notes.length-1]);
     var note_elem = createNote(notes[notes.length-1]);
     Notes_table_body.appendChild(note_elem);
 }
@@ -112,11 +138,13 @@ function createNote(note) {
     note_tr.appendChild(td_dates);
     note_tr.appendChild(td_buttons);
     note_tr.appendChild(td_index);
+    SummaryCounter();
     return note_tr;
 }
 
 function NoteClick (e) {
     item = e.target;
+    console.log(item.classList[0]);
     switch (item.classList[0]) {
         case "btn-archive":
             ArchiveNote(e);
@@ -140,45 +168,85 @@ function NoteClick (e) {
 
 function getNote (node) {
     var btns = node.target.parentNode;
-    var note = btns.parentNode;
-    return note;
-}
-
-function getNoteObject (id) {
-    // var note_id = parseInt(id);
-    // // console.log(note_id + "   " + typeof note_id);
-    // notes.forEach(note => {
-    //     if (note.index === note_id) {
-    //         console.log(note);
-    //         return note;
-    //     };
-    // });
+    return btns.parentNode;
 }
 
 function loadNotes () {
     notes.forEach(note => {
-        var note_elem = createNote(note);
-        Notes_table_body.appendChild(note_elem);
+        if(!note.isArchived) {
+            var note_elem = createNote(note);
+            Notes_table_body.appendChild(note_elem);
+        }
     });
 }
 
 function ArchiveNote (e) {
     var note = getNote(e);
-    console.log(note[0]);
+    var id = parseInt(note.children[7].innerHTML);
+    var note_obj = notes.filter(note => {
+        return note.index === id;
+    });
+    note_obj[0].isArchived = true;
+    var Notes_table_body_temp = document.querySelector(".notes-table-body");
+    Notes_table_body_temp.removeChild(note);
+    SummaryCounter();
+}
+
+function SummaryCounter() {
+    var task_counter = [0, 0];
+    var idea_counter = [0, 0];
+    var rndm_counter = [0, 0];
+    notes.forEach(note => {
+        switch (note.category) {
+            case "Task":
+                if(!note.isArchived){
+                    task_counter[0]++;
+                } else {
+                    task_counter[1]++;
+                }
+                break;
+            case "Idea":
+                if(!note.isArchived){
+                    idea_counter[0]++;
+                } else {
+                    idea_counter[1]++;
+                }
+                break;
+            case "Random Thought":
+                if(!note.isArchived){
+                    rndm_counter[0]++;
+                } else {
+                    rndm_counter[1]++;
+                }
+                break;
+            default:
+                break;
+        }
+    });
+    td_task_active.innerText = task_counter[0];
+    td_task_archived.innerText = task_counter[1];
+    td_idea_active.innerText = idea_counter[0];
+    td_idea_archived.innerText = idea_counter[1];
+    td_rndm_active.innerText = rndm_counter[0];
+    td_rndm_archived.innerText = rndm_counter[1];
+    
 }
 
 function DeleteNote (e) {
     var note = getNote(e);
+    var id = parseInt(note.children[7].innerHTML);
+    var note_index = notes.findIndex(note => note.index === id);
+    notes.splice(note_index, 1);
+    SummaryCounter();
     Notes_table_body.removeChild(note);
 }
 
 function EditNote (e) {
-    // console.log(e.target);
     var note = getNote(e);
+    // console.log(note);
     var tr_edit = document.createElement("tr");
-    tr_edit.setAttribute("class", "edit-note-tr")
+    tr_edit.setAttribute("class", "edit-note-tr");
     var note_data = note.children;
-    console.log(note_data);
     var category = [];
     switch (note_data[3].innerText) {
         case "Task":
@@ -194,7 +262,7 @@ function EditNote (e) {
             break;
     }
     tr_edit.innerHTML = `
-    <form>
+    <form name="EditNote" autocomplete="off">
         <td>${note_data[0].innerHTML}</td>
             <td><input type="text" required name="Name" placeholder="Name" value="${note_data[1].innerText}"></td>
             <td>${note_data[2].innerText}</td>
@@ -206,7 +274,7 @@ function EditNote (e) {
             <td><textarea type="text" required name="Content" placeholder="Content">${note_data[4].innerText}</textarea></td>
             <td>${note_data[5].innerText}</td>
             <td><input type="submit" class="edit-submit" value="Save"> <input type="button" class="edit-cancel" value="Cancel"></td>
-            <td class="note-index">${note_data[7].innerText}</td>
+            <td class="note-index" style="visibility: hidden;">${note_data[7].innerHTML}</td>
     </form>
     `;
     Notes_table_body.insertBefore(tr_edit, note);
@@ -215,27 +283,36 @@ function EditNote (e) {
 }
 
 function EditCancel (e) {
-    // var note_id = document.querySelector(".note-index");
     var note = getNote(e);
-    // console.log(note.children[8].innerText);
     var Notes_table_body_temp = document.querySelector(".notes-table-body");
-    var tr_edit = document.querySelector(".edit-note-tr");
-    var id = parseInt(note.children[8].innerText);
+    var id = parseInt(note.children[8].innerHTML);
     var note_object = {}
     notes.forEach(note => {
         if (note.index === id) {
-            // console.log(note);
             note_object = note;
         };
     });
-    var note_elem = createNote(note_object)
-    console.log(note_elem);
-    Notes_table_body_temp.insertBefore(note_elem, tr_edit);
-    Notes_table_body_temp.removeChild(tr_edit);
+    var note_elem = createNote(note_object);
+    Notes_table_body_temp.insertBefore(note_elem, note);
+    Notes_table_body_temp.removeChild(note);
 }
 
 function EditCompletion (e) {
-    
+    var note = getNote(e);
+    var id = parseInt(note.children[8].innerHTML);
+    var name = note.children[2].children[0].value;
+    var category = note.children[4].children[0].value;
+    var content = note.children[5].children[0].value;
+    notes[id] = {...notes[id], name, category, content};
+    var note_elem = createNote(notes[id]);
+    var Notes_table_body_temp = document.querySelector(".notes-table-body");
+    Notes_table_body_temp.insertBefore(note_elem, note);
+    Notes_table_body_temp.removeChild(note);
+    SummaryCounter();
+}
+
+function ShowArchived (e) {
+    alert("Showing archived notes");
 }
 
 

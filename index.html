@@ -29,6 +29,31 @@
     <button class="show-create-form">Create</button>
     <div class="create-note-form"></div>
     <i class="fa-solid fa-box-archive"></i>
+    <input class="archived-notes-btn" type="button" value="Show archived notes">
+    <table class="summary-table">
+        <thead>
+            <tr>
+                <th>Icon</th>
+                <th>Note Category</th>
+                <th>Active</th>
+                <th>Archived</th>
+            </tr>
+        </thead>
+        <tbody class="archive-table-body">
+            <tr class="row-task">
+                <td><i class="fa-solid fa-paperclip"></i></td>
+                <td>Task</td>
+            </tr>
+            <tr class="row-idea">
+                <td><i class="fa-solid fa-lightbulb"></i></td>
+                <td>Idea</td>
+            </tr>
+            <tr class="row-rndm">
+                <td><i class="fa-solid fa-dice-d20"></i></td>
+                <td>Random Thought</td>
+            </tr>
+        </tbody>
+    </table>    
     <!-- <img style="background-color: aqua; height: 20%; width: 20%;" src="./Black (1).webp"> -->
 
     <script src="./app.js"></script>
