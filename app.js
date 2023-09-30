@@ -1,15 +1,18 @@
 //Selectors and variables
 let showForm = false;
+let ShowArchivedNotes = false;
 let notes = [{name: "kek", created: "Septemder 14, 2023", category: "Task", content: "some content", dates: "1/10/2024", isArchived: false, index: 0},
 {name: "Lul", created: "Septemder 16, 2023", category: "Idea", content: "assgsergesr", dates: "1/10/2024", isArchived: false, index: 1},
 {name: "Vasya", created: "Septemder 16, 2023", category: "Random Thought", content: "dlgbfjglnbdfg", dates: "1/10/2024", isArchived: false, index: 2},
 {name: "huh", created: "Septemder 25, 2023", category: "Task", content: "ddss", dates: "1/10/2024", isArchived: true, index: 3},
 {name: "meh", created: "Septemder 25, 2023", category: "Idea", content: "treq", dates: "1/10/2024", isArchived: true, index: 4},
 {name: "wawa", created: "Septemder 25, 2023", category: "Random Thought", content: "jhgfds", dates: "1/10/2024", isArchived: true, index: 5}];
+var doc_body = document.querySelector("body");
 var btn_Show_create_form = document.querySelector(".show-create-form");
 var Note_Form_div = document.querySelector(".create-note-form");
 var Notes_table_body = document.querySelector(".notes-table-body");
 var btn_Show_archive_notes = document.querySelector(".archived-notes-btn");
+var archived_notes_table = document.querySelector(".archived-notes-div");
 var row_task = document.querySelector(".row-task");
 var row_idea = document.querySelector(".row-idea");
 var row_rndm = document.querySelector(".row-rndm");
@@ -27,7 +30,8 @@ row_rndm.appendChild(td_rndm_active);
 row_rndm.appendChild(td_rndm_archived);
 //Event Listeners
 btn_Show_create_form.addEventListener('click', showCreateForm);
-Notes_table_body.addEventListener('click', NoteClick);
+// Notes_table_body.addEventListener('click', NoteClick);
+doc_body.addEventListener('click', NoteClick);
 btn_Show_archive_notes.addEventListener('click', ShowArchived);
 window.onload = loadNotes;
 
@@ -62,13 +66,13 @@ function showCreateForm (Event) {
         </form>
       `;
       showForm = true;
-      btn_Show_create_form.innerHTML = "Hide"
+      btn_Show_create_form.innerHTML = "Hide";
       Note_Form_div.appendChild(Note_Form);
       var btn_note_form_submit = document.querySelector(".note_form_submit");
       btn_note_form_submit.addEventListener('click', addNote);
     } else {
-        var noteForm = document.querySelector(".note-form-div")
-        btn_Show_create_form.innerHTML = "Create"
+        var noteForm = document.querySelector(".note-form-div");
+        btn_Show_create_form.innerHTML = "Create";
         Note_Form_div.removeChild(noteForm);
         showForm = false;
     }
@@ -166,11 +170,6 @@ function NoteClick (e) {
     }
 }
 
-function getNote (node) {
-    var btns = node.target.parentNode;
-    return btns.parentNode;
-}
-
 function loadNotes () {
     notes.forEach(note => {
         if(!note.isArchived) {
@@ -181,14 +180,30 @@ function loadNotes () {
 }
 
 function ArchiveNote (e) {
-    var note = getNote(e);
+    var Notes_table_body = e.target.closest("tbody");
+    var note = e.target.closest("tr");
     var id = parseInt(note.children[7].innerHTML);
     var note_obj = notes.filter(note => {
         return note.index === id;
     });
-    note_obj[0].isArchived = true;
-    var Notes_table_body_temp = document.querySelector(".notes-table-body");
-    Notes_table_body_temp.removeChild(note);
+    switch (Notes_table_body.className) {
+        case "notes-table-body":
+            note_obj[0].isArchived = true;
+            if(ShowArchivedNotes) {
+                var arch_table_body = document.querySelector(".archived-notes-table-body");
+                arch_table_body.appendChild(note);
+            } else {
+                Notes_table_body.removeChild(note);
+            }
+            break;
+        case "archived-notes-table-body":
+            var Notes_table_body = document.querySelector(".notes-table-body");
+            note_obj[0].isArchived = false;
+            Notes_table_body.appendChild(note);
+            break;
+        default:
+            break;
+    }
     SummaryCounter();
 }
 
@@ -233,7 +248,8 @@ function SummaryCounter() {
 }
 
 function DeleteNote (e) {
-    var note = getNote(e);
+    var note = e.target.closest("tr");
+    var Notes_table_body = e.target.closest("tbody");
     var id = parseInt(note.children[7].innerHTML);
     var note_index = notes.findIndex(note => note.index === id);
     notes.splice(note_index, 1);
@@ -242,8 +258,8 @@ function DeleteNote (e) {
 }
 
 function EditNote (e) {
-    var note = getNote(e);
-    // console.log(note);
+    var note = e.target.closest("tr");
+    var Notes_table_body = e.target.closest("tbody");
     var tr_edit = document.createElement("tr");
     tr_edit.setAttribute("class", "edit-note-tr");
     var note_data = note.children;
@@ -283,8 +299,8 @@ function EditNote (e) {
 }
 
 function EditCancel (e) {
-    var note = getNote(e);
-    var Notes_table_body_temp = document.querySelector(".notes-table-body");
+    var note = e.target.closest("tr");
+    var Notes_table_body = e.target.closest("tbody");
     var id = parseInt(note.children[8].innerHTML);
     var note_object = {}
     notes.forEach(note => {
@@ -293,26 +309,62 @@ function EditCancel (e) {
         };
     });
     var note_elem = createNote(note_object);
-    Notes_table_body_temp.insertBefore(note_elem, note);
-    Notes_table_body_temp.removeChild(note);
+    Notes_table_body.insertBefore(note_elem, note);
+    Notes_table_body.removeChild(note);
 }
 
 function EditCompletion (e) {
-    var note = getNote(e);
+    var note = e.target.closest("tr");
     var id = parseInt(note.children[8].innerHTML);
     var name = note.children[2].children[0].value;
     var category = note.children[4].children[0].value;
     var content = note.children[5].children[0].value;
     notes[id] = {...notes[id], name, category, content};
     var note_elem = createNote(notes[id]);
-    var Notes_table_body_temp = document.querySelector(".notes-table-body");
-    Notes_table_body_temp.insertBefore(note_elem, note);
-    Notes_table_body_temp.removeChild(note);
+    var Notes_table_body = e.target.closest("tbody");
+    Notes_table_body.insertBefore(note_elem, note);
+    Notes_table_body.removeChild(note);
     SummaryCounter();
 }
 
 function ShowArchived (e) {
-    alert("Showing archived notes");
+    if (!ShowArchivedNotes) {
+        var archived_notes_table_div = document.createElement("div");
+        archived_notes_table_div.setAttribute("class", "archived_notes_table_div");
+        archived_notes_table_div.innerHTML = `
+        <table>
+            <thead>
+                <tr>
+                    <th>Icon</th>
+                    <th>Name</th>
+                    <th>Created</th>
+                    <th>Category</th>
+                    <th>Content</th>
+                    <th>Dates</th>
+                    <th><i class="fa-solid fa-box-archive"></i><i class="fa-solid fa-trash"></i></th>
+                </tr>
+            </thead>
+            <tbody class="archived-notes-table-body">
+
+            </tbody>
+        </table>
+        `;
+        archived_notes_table.appendChild(archived_notes_table_div);
+        ShowArchivedNotes = true;
+        btn_Show_archive_notes.innerHTML = "Hide archived notes";
+        var arch_table_body = document.querySelector(".archived-notes-table-body")
+        notes.forEach(note => {
+            if(note.isArchived) {
+                var note_elem = createNote(note);
+                arch_table_body.appendChild(note_elem);
+            }
+        });
+    } else {
+        var archived_notes_table_div = document.querySelector(".archived_notes_table_div");
+        archived_notes_table.removeChild(archived_notes_table_div);
+        ShowArchivedNotes = false;
+        btn_Show_archive_notes.innerHTML = "Show archived notes";
+    }
 }
 
 
