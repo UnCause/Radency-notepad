@@ -11,7 +11,7 @@ var doc_body = document.querySelector("body");
 var btn_Show_create_form = document.querySelector(".show-create-form");
 var Note_Form_div = document.querySelector(".create-note-form");
 var Notes_table_body = document.querySelector(".notes-table-body");
-var btn_Show_archive_notes = document.querySelector(".archived-notes-btn");
+var btn_Show_archived_notes = document.querySelector(".archived-notes-btn");
 var archived_notes_table = document.querySelector(".archived-notes-div");
 var row_task = document.querySelector(".row-task");
 var row_idea = document.querySelector(".row-idea");
@@ -30,21 +30,18 @@ row_rndm.appendChild(td_rndm_active);
 row_rndm.appendChild(td_rndm_archived);
 //Event Listeners
 btn_Show_create_form.addEventListener('click', showCreateForm);
-// Notes_table_body.addEventListener('click', NoteClick);
 doc_body.addEventListener('click', NoteClick);
-btn_Show_archive_notes.addEventListener('click', ShowArchived);
+btn_Show_archived_notes.addEventListener('click', ShowArchived);
 window.onload = loadNotes;
 
 //to export in external file
 var days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 var months = ["January", "February", "March", "April", "May", "June", 
             "July", "August", "Septemder", "October", "November", "December"];
-// var fullDate = "Сегодня: " + myDate.getDate() + " " + months[myDate.getMonth()] + 
-//                 " " + myDate.getFullYear() + ", " + days[myDate.getDay()];
 
 //Functions
-function showCreateForm (Event) {
-    Event.preventDefault();
+function showCreateForm (e) {
+    e.preventDefault();
 
     if (!showForm) {
         var Note_Form = document.createElement("div");
@@ -86,7 +83,7 @@ function addNote (e) {
     var date = new Date();
     var createdDate = months[date.getMonth()] + " " + date.getDate()  + 
     ", " + date.getFullYear();
-    var dates = "to implement";
+    var dates = getDates(content);
     notes.push({
         name, 
         created: createdDate, 
@@ -95,14 +92,12 @@ function addNote (e) {
         dates, 
         isArchived: false, 
         index: notes.length});
-    // console.log(notes[notes.length-1]);
     var note_elem = createNote(notes[notes.length-1]);
     Notes_table_body.appendChild(note_elem);
 }
 function createNote(note) {
 
     var note_tr = document.createElement("tr");
-    // Notes_table_body.appendChild(note_tr);
     var td_category = document.createElement("td");
     td_category.innerText = note.category;
     var td_icon = document.createElement("td");
@@ -133,7 +128,7 @@ function createNote(note) {
     var td_index = document.createElement("td");
     td_index.setAttribute("class", "note-index");
     td_index.innerText = note.index;
-    // td_index.style.visibility = "hidden";
+    td_index.style.visibility = "hidden";
     note_tr.appendChild(td_icon);
     note_tr.appendChild(td_name);
     note_tr.appendChild(td_created);
@@ -328,6 +323,8 @@ function EditCompletion (e) {
 }
 
 function ShowArchived (e) {
+    e.preventDefault();
+
     if (!ShowArchivedNotes) {
         var archived_notes_table_div = document.createElement("div");
         archived_notes_table_div.setAttribute("class", "archived_notes_table_div");
@@ -351,7 +348,7 @@ function ShowArchived (e) {
         `;
         archived_notes_table.appendChild(archived_notes_table_div);
         ShowArchivedNotes = true;
-        btn_Show_archive_notes.innerHTML = "Hide archived notes";
+        btn_Show_archived_notes.innerHTML = "Hide archived notes";
         var arch_table_body = document.querySelector(".archived-notes-table-body")
         notes.forEach(note => {
             if(note.isArchived) {
@@ -363,10 +360,38 @@ function ShowArchived (e) {
         var archived_notes_table_div = document.querySelector(".archived_notes_table_div");
         archived_notes_table.removeChild(archived_notes_table_div);
         ShowArchivedNotes = false;
-        btn_Show_archive_notes.innerHTML = "Show archived notes";
+        btn_Show_archived_notes.innerHTML = "Show archived notes";
     }
 }
 
+function getDates (content) {
+    let exp = /\d{1,2}\/\d{1,2}\/\d{4}/g;
+    let dates = content.match(exp);
+    let output = [];
+    try {
+        dates.forEach(rawdate => {
+            dateParts = rawdate.split("/");
+            console.log(dateParts);
+            let day = dateParts[0];
+            let month = dateParts[1];
+            let year = dateParts[2];
+    
+            day = parseInt(day, 10);
+            month = parseInt(month, 10) - 1; // Monthes in JS start from 0
+            year = parseInt(year, 10);
+    
+            const date = new Date(year, month, day);
+
+            if (date.getFullYear() === year && date.getMonth() === month && date.getDate() === day) {
+                output.push(rawdate);
+            };
+        });
+    } catch (error) {
+        console.log("There is no dates in content input!");
+    }
+
+    return output.join(", ");
+}
 
 
 
